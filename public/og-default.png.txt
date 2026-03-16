@@ -1,0 +1,13 @@
+REPLACE THIS FILE: Generate a real OG image (1200x630px) and save as og-default.png
+
+Suggested content:
+- Background: #FAFAF8 (light) or #100F0A (dark)
+- Logo mark: hexagon in #EFA020
+- Headline: "MarrowStack" in Fraunces font
+- Subline: "Production Next.js Code Blocks"
+- Bottom: "auth · billing · admin · teams + 13 more"
+
+Tools to generate:
+- https://og-image.vercel.app  (free Vercel OG)
+- Figma → Export as PNG
+- @vercel/og in app/api/og/route.tsx (see README)
