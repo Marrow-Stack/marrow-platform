@@ -17,7 +17,7 @@ export async function customizeBlock(
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-5',
+      model: 'claude-sonnet-4-5-20251001',
       max_tokens: 8096,
       system: `You are a senior TypeScript/Next.js developer. You receive production code blocks and customization instructions.
 Return ONLY a JSON object (no markdown fences) with two fields:
@@ -37,7 +37,8 @@ Rules:
   })
 
   if (!response.ok) {
-    throw new Error(`Claude API error: ${response.status}`)
+    const errBody = await response.text()
+    throw new Error(`Claude API error: ${response.status} — ${errBody}`)
   }
 
   const data = await response.json()

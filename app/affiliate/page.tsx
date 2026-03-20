@@ -11,11 +11,11 @@ const STEPS = [
   { n: '01', title: 'Sign up free', body: 'Create your account and your unique affiliate link appears instantly in your dashboard.' },
   { n: '02', title: 'Share anywhere', body: 'Post on Twitter, YouTube, your blog, Discord — anywhere developers hang out.' },
   { n: '03', title: 'Earn 25%', body: 'Every purchase you refer pays 25%. A single MVP bundle referral earns you $17.25.' },
-  { n: '04', title: 'Get paid via PayPal', body: 'Request a payout when your balance hits $50. Arrives in 1–3 business days.' },
+  { n: '04', title: 'Get paid via RazorPay', body: 'Request a payout when your balance hits $50. Arrives in 1–3 business days.' },
 ]
 
 const FAQS = [
-  { q: 'When do I get paid?', a: 'Request a payout any time your balance hits $50. PayPal transfers land in 1–3 business days.' },
+  { q: 'When do I get paid?', a: 'Request a payout any time your balance hits $50. RazorPay transfers land in 1–3 business days.' },
   { q: 'Is there an earnings cap?', a: 'No cap. Refer 1 sale or 1,000 — you earn 25% on all of them, forever.' },
   { q: 'How long does the cookie last?', a: '30 days. If someone clicks your link and buys within 30 days, you earn the commission.' },
   { q: 'Do I need to buy before I can be an affiliate?', a: 'No. You get your link the moment you create a free account.' },

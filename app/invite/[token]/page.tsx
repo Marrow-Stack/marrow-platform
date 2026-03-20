@@ -3,9 +3,11 @@ import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useParams } from 'next/navigation'
 import { Navbar } from '@/components/Navbar'
 
-export default function InvitePage({ params }: { params: { token: string } }) {
+export default function InvitePage() {
+  const params = useParams()
   const { data: session, status } = useSession()
   const router = useRouter()
   const [state, setState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
@@ -14,7 +16,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
 
   useEffect(() => {
     // Fetch invite details
-    fetch(`/api/invite/${params.token}`)
+    fetch(`/api/invite/${params.token as string}`)
       .then(r => r.json())
       .then(d => { if (d.workspaceName) setWorkspaceName(d.workspaceName) })
       .catch(() => {})
@@ -26,7 +28,7 @@ export default function InvitePage({ params }: { params: { token: string } }) {
     const res = await fetch('/api/invite/accept', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: params.token }),
+      body: JSON.stringify({ token: params.token as string }),
     })
     const data = await res.json()
     if (res.ok) { setState('success'); setTimeout(() => router.push('/dashboard'), 1500) }

@@ -15,10 +15,10 @@
     "@octokit/rest": "^20.0.2",
     "@supabase/supabase-js": "^2.39.7",
     "bcryptjs": "^2.4.3",
-    "next": "14.2.3",
+    "next": "16.1.17",
     "next-auth": "^4.24.7",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "react-hook-form": "^7.51.3",
     "react-hot-toast": "^2.4.1",
     "resend": "^3.2.0",
@@ -28,11 +28,14 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20.12.7",
-    "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }

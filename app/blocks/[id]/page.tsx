@@ -7,14 +7,15 @@ import { getBlock, BLOCKS, ALL_BLOCKS } from '@/lib/blocksData'
 import type { Metadata } from 'next'
 import { BuyCard } from './BuyCard'
 
-type Props = { params: { id: string }; searchParams: { ref?: string } }
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ ref?: string }> }
 
 export async function generateStaticParams() {
   return ALL_BLOCKS.map(b => ({ id: b.id }))
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const block = getBlock(params.id)
+  const { id } = await params
+  const block = getBlock(id)
   if (!block) return {}
   const base = process.env.NEXT_PUBLIC_APP_URL || 'https://marrowstack.dev'
   return {
@@ -32,8 +33,10 @@ const COMPLEXITY = {
   Advanced:     { color: '#E53E3E', bg: 'rgba(229,62,62,0.08)' },
 }
 
-export default function BlockPage({ params, searchParams }: Props) {
-  const block = getBlock(params.id)
+export default async function BlockPage({ params, searchParams }: Props) {
+  const { id } = await params
+  const { ref } = await searchParams
+  const block = getBlock(id)
   if (!block) notFound()
 
   const c = COMPLEXITY[block.complexity]
@@ -138,7 +141,7 @@ export default function BlockPage({ params, searchParams }: Props) {
           <div>
             <div className="lg:sticky lg:top-24">
               <Suspense fallback={<div className="card p-6 h-64 animate-pulse" />}>
-                <BuyCard block={block} affiliateCode={searchParams.ref} />
+                <BuyCard block={block} affiliateCode={ref} />
               </Suspense>
             </div>
           </div>

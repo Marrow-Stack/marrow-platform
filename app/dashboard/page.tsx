@@ -59,7 +59,7 @@ export default function DashboardPage() {
   const TABS: { id: Tab; label: string; count?: number }[] = [
     { id: 'blocks', label: 'My Blocks', count: purchases.length },
     { id: 'affiliate', label: 'Affiliate' },
-    { id: 'customize', label: '✦ Customize' },
+    // { id: 'customize', label: '✦ Customize' },  // re-enable after adding Anthropic credits
   ]
 
   return (
@@ -122,11 +122,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-2 shrink-0">
                         <a href={`https://github.com/${GITHUB_OWNER}/${block.repoName}`} target="_blank" rel="noopener noreferrer"
                           className="btn-ghost px-4 py-1.5 text-[12px] font-medium">GitHub →</a>
-                        <button onClick={() => { setBlockId(block.id); setTab('customize') }}
-                          className="px-3 py-1.5 text-[12px] font-medium rounded-lg transition-all"
-                          style={{ background: 'var(--accent-bg)', color: 'var(--accent)' }}>
-                          ✦ AI
-                        </button>
+                        {/* AI button hidden — re-enable after adding Anthropic credits */}
                       </div>
                     </div>
                   )

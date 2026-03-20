@@ -1,5 +1,7 @@
+'use client'
 import Link from 'next/link'
 import type { Block } from '@/lib/blocksData'
+import { useCurrency } from '@/hooks/useCurrency'
 
 const COMPLEXITY = {
   Beginner:     { dot: '#22C55E', label: 'Beginner' },
@@ -8,7 +10,9 @@ const COMPLEXITY = {
 }
 
 export function BlockCard({ block, featured }: { block: Block; featured?: boolean }) {
+  const { formatPrice } = useCurrency()
   const c = COMPLEXITY[block.complexity]
+
   return (
     <Link href={`/blocks/${block.id}`} className="card group block p-5 no-underline relative overflow-hidden">
       {featured && (
@@ -21,7 +25,9 @@ export function BlockCard({ block, featured }: { block: Block; featured?: boolea
         <h3 className="font-display font-bold text-[var(--text)] text-[17px] leading-snug group-hover:text-[var(--accent)] transition-colors">
           {block.name}
         </h3>
-        <span className="font-display font-bold text-[var(--accent)] text-xl shrink-0 tabular-nums">${block.price}</span>
+        <span className="font-display font-bold text-[var(--accent)] text-xl shrink-0 tabular-nums">
+          {formatPrice(block.price)}
+        </span>
       </div>
 
       <p className="text-[var(--text-3)] text-[13px] leading-relaxed mb-4 line-clamp-2">{block.tagline}</p>

@@ -3,13 +3,13 @@
 -- Run this entire file in: Supabase Dashboard → SQL Editor → Run
 -- ============================================================
 
--- ── Profiles (extends Supabase auth or standalone) ───────────
+-- ── Profiles ─────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.profiles (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email                 TEXT UNIQUE NOT NULL,
   name                  TEXT,
   avatar_url            TEXT,
-  password_hash         TEXT,                          -- null for OAuth-only users
+  password_hash         TEXT,
   github_username       TEXT,
   role                  TEXT NOT NULL DEFAULT 'user'
                           CHECK (role IN ('user', 'admin', 'super_admin')),
@@ -23,7 +23,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "profiles_own" ON public.profiles FOR ALL USING (id::text = auth.uid()::text);
+CREATE POLICY "profiles_own"   ON public.profiles FOR ALL USING (id::text = auth.uid()::text);
 CREATE POLICY "profiles_admin" ON public.profiles FOR ALL USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id::text = auth.uid()::text AND role IN ('admin','super_admin'))
 );
@@ -42,14 +42,14 @@ CREATE TABLE IF NOT EXISTS public.purchases (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ALTER TABLE public.purchases ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "purchases_own" ON public.purchases FOR SELECT USING (user_id::text = auth.uid()::text);
+CREATE POLICY "purchases_own"   ON public.purchases FOR SELECT USING (user_id::text = auth.uid()::text);
 CREATE POLICY "purchases_admin" ON public.purchases FOR ALL USING (
   EXISTS (SELECT 1 FROM public.profiles WHERE id::text = auth.uid()::text AND role IN ('admin','super_admin'))
 );
-CREATE INDEX IF NOT EXISTS purchases_user_idx ON public.purchases(user_id);
+CREATE INDEX IF NOT EXISTS purchases_user_idx  ON public.purchases(user_id);
 CREATE INDEX IF NOT EXISTS purchases_block_idx ON public.purchases(block_id);
 
--- ── Pending orders (cleared on capture) ─────────────────────
+-- ── Pending orders ───────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.pending_orders (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   order_id          TEXT UNIQUE NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS public.pending_orders (
   created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ALTER TABLE public.pending_orders ENABLE ROW LEVEL SECURITY;
--- No user-level RLS needed (only server-side admin client touches this)
+-- Service-role only — no user-level RLS needed
 
 -- ── Affiliate earnings ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.affiliate_earnings (
@@ -113,51 +113,12 @@ CREATE TABLE IF NOT EXISTS public.feature_flags (
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 INSERT INTO public.feature_flags VALUES
-  ('ai_customize', true, 'AI block customization via Claude API'),
-  ('affiliate_program', true, 'Affiliate commission tracking and payouts')
+  ('ai_customize',      true,  'AI block customization via Claude API'),
+  ('affiliate_program', true,  'Affiliate commission tracking and payouts')
 ON CONFLICT (key) DO NOTHING;
 
--- ── RPC Functions ────────────────────────────────────────────
-
--- Add to affiliate balance atomically
-CREATE OR REPLACE FUNCTION public.add_affiliate_balance(p_user_id UUID, p_amount DECIMAL)
-RETURNS void AS $$
-  UPDATE public.profiles
-  SET affiliate_balance = affiliate_balance + p_amount,
-      updated_at = NOW()
-  WHERE id = p_user_id;
-$$ LANGUAGE sql SECURITY DEFINER;
-
--- Revenue by month (for admin dashboard)
-CREATE OR REPLACE FUNCTION public.revenue_by_month(p_months INT DEFAULT 6)
-RETURNS TABLE(month TEXT, revenue DECIMAL, purchases BIGINT) AS $$
-  SELECT
-    to_char(date_trunc('month', created_at), 'Mon ''YY') AS month,
-    SUM(amount) AS revenue,
-    COUNT(*) AS purchases
-  FROM public.purchases
-  WHERE status = 'completed'
-    AND created_at >= NOW() - (p_months || ' months')::INTERVAL
-  GROUP BY date_trunc('month', created_at)
-  ORDER BY date_trunc('month', created_at);
-$$ LANGUAGE sql SECURITY DEFINER;
-
--- Auto-update updated_at timestamp
-CREATE OR REPLACE FUNCTION public.set_updated_at()
-RETURNS trigger AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER profiles_updated_at
-  BEFORE UPDATE ON public.profiles
-  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
--- ── Team & Workspaces (from bundle or team block purchase) ────
--- These tables are only needed if you purchased the Team block.
--- Full SQL with all RLS policies is in blocks/team/index.ts.
+-- ── Workspaces ───────────────────────────────────────────────
+-- Create ALL three tables first, THEN add policies (policies cross-reference each other)
 
 CREATE TABLE IF NOT EXISTS public.workspaces (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -170,11 +131,6 @@ CREATE TABLE IF NOT EXISTS public.workspaces (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-ALTER TABLE public.workspaces ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "ws_member_select" ON public.workspaces FOR SELECT USING (
-  id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id::text = auth.uid()::text)
-);
-CREATE POLICY "ws_owner_all" ON public.workspaces FOR ALL USING (owner_id::text = auth.uid()::text);
 
 CREATE TABLE IF NOT EXISTS public.workspace_members (
   id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -183,16 +139,6 @@ CREATE TABLE IF NOT EXISTS public.workspace_members (
   role         TEXT NOT NULL DEFAULT 'member' CHECK (role IN ('owner','admin','member','viewer')),
   joined_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (workspace_id, user_id)
-);
-ALTER TABLE public.workspace_members ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "wm_member_select" ON public.workspace_members FOR SELECT USING (
-  workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id::text = auth.uid()::text)
-);
-CREATE POLICY "wm_admin_manage" ON public.workspace_members FOR ALL USING (
-  workspace_id IN (
-    SELECT workspace_id FROM public.workspace_members
-    WHERE user_id::text = auth.uid()::text AND role IN ('owner','admin')
-  )
 );
 
 CREATE TABLE IF NOT EXISTS public.workspace_invites (
@@ -207,10 +153,70 @@ CREATE TABLE IF NOT EXISTS public.workspace_invites (
   created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   UNIQUE (workspace_id, email)
 );
+
+-- Enable RLS on all three AFTER tables exist
+ALTER TABLE public.workspaces        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.workspace_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.workspace_invites ENABLE ROW LEVEL SECURITY;
+
+-- Policies AFTER all tables exist (they cross-reference workspace_members)
+CREATE POLICY "ws_owner_all"     ON public.workspaces FOR ALL    USING (owner_id::text = auth.uid()::text);
+CREATE POLICY "ws_member_select" ON public.workspaces FOR SELECT USING (
+  id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id::text = auth.uid()::text)
+);
+
+CREATE POLICY "wm_member_select" ON public.workspace_members FOR SELECT USING (
+  workspace_id IN (SELECT workspace_id FROM public.workspace_members WHERE user_id::text = auth.uid()::text)
+);
+CREATE POLICY "wm_admin_manage"  ON public.workspace_members FOR ALL USING (
+  workspace_id IN (
+    SELECT workspace_id FROM public.workspace_members
+    WHERE user_id::text = auth.uid()::text AND role IN ('owner','admin')
+  )
+);
+
 CREATE POLICY "invite_admin" ON public.workspace_invites FOR ALL USING (
   workspace_id IN (
     SELECT workspace_id FROM public.workspace_members
     WHERE user_id::text = auth.uid()::text AND role IN ('owner','admin')
   )
 );
+
+-- ── RPC Functions ─────────────────────────────────────────────
+
+-- Add to affiliate balance atomically (called on every purchase with an affiliate)
+CREATE OR REPLACE FUNCTION public.add_affiliate_balance(p_user_id UUID, p_amount DECIMAL)
+RETURNS void AS $$
+  UPDATE public.profiles
+  SET affiliate_balance = affiliate_balance + p_amount,
+      updated_at = NOW()
+  WHERE id = p_user_id;
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- Revenue by month (for admin dashboard)
+CREATE OR REPLACE FUNCTION public.revenue_by_month(p_months INT DEFAULT 6)
+RETURNS TABLE(month TEXT, revenue DECIMAL, purchases BIGINT) AS $$
+  SELECT
+    to_char(date_trunc('month', created_at), 'Mon ''YY') AS month,
+    SUM(amount)  AS revenue,
+    COUNT(*)     AS purchases
+  FROM public.purchases
+  WHERE status = 'completed'
+    AND created_at >= NOW() - (p_months || ' months')::INTERVAL
+  GROUP BY date_trunc('month', created_at)
+  ORDER BY date_trunc('month', created_at);
+$$ LANGUAGE sql SECURITY DEFINER;
+
+-- Auto-update updated_at on profiles
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS trigger AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS profiles_updated_at ON public.profiles;
+CREATE TRIGGER profiles_updated_at
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();

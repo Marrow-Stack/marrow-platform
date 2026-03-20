@@ -46,7 +46,7 @@ export default function HomePage() {
           <div className="inline-flex items-center gap-2 badge mb-8 text-[var(--accent)]"
             style={{ background: 'var(--accent-bg)', border: '1px solid rgba(239,160,32,0.25)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-            {BLOCKS.length} blocks · instant GitHub access · PayPal checkout
+            {BLOCKS.length} blocks · instant GitHub access · RazorPay checkout
           </div>
 
           {/* Headline */}
@@ -156,7 +156,7 @@ export default function HomePage() {
               { icon: '📁', title: 'The full source file', body: 'One index.ts (or .tsx) with every export documented inline. No split files, no magic imports.' },
               { icon: '🗄️', title: 'SQL migration included', body: 'Every block that needs a table ships with CREATE TABLE, RLS policies, and indexes — ready to paste into Supabase.' },
               { icon: '📖', title: 'Usage in the file header', body: 'Setup steps and code examples are in comments at the top of every file. No separate docs to hunt down.' },
-              { icon: '🔑', title: 'GitHub access in seconds', body: 'PayPal confirms → our system invites your GitHub account → you clone and go. No waiting for a human.' },
+              { icon: '🔑', title: 'GitHub access in seconds', body: 'RazorPay confirms → our system invites your GitHub account → you clone and go. No waiting for a human.' },
               { icon: '🤖', title: 'AI customization included', body: 'Use the dashboard customizer to modify any block you own with a plain-English instruction. Powered by Claude.' },
               { icon: '♾️', title: 'Yours forever', body: 'One-time payment. No subscription. No licence expiry. Use the code in as many projects as you want.' },
             ].map(({ icon, title, body }) => (
@@ -190,7 +190,7 @@ export default function HomePage() {
               <p className="text-[12px] uppercase tracking-widest text-[var(--text-3)] font-semibold mb-4">Affiliate Program</p>
               <h2 className="font-display font-black text-[34px] sm:text-[42px] text-[var(--text)] mb-4">Earn 25% per sale 💸</h2>
               <p className="text-[var(--text-2)] mb-8 max-w-md mx-auto leading-relaxed">
-                Share your affiliate link. Earn 25% commission on every purchase you refer. PayPal payout at $50.
+                Share your affiliate link. Earn 25% commission on every purchase you refer. Payout at $50.
               </p>
               <Link href="/affiliate" className="btn-accent inline-flex px-8 py-3.5 text-[15px] font-semibold text-white">
                 Join the affiliate program →
@@ -214,7 +214,7 @@ export default function HomePage() {
               <Link key={l} href={h} className="hover:text-[var(--text)] transition-colors">{l}</Link>
             ))}
           </div>
-          <p className="text-[12px] text-[var(--text-3)]">🔒 Secure PayPal · India-compatible</p>
+          <p className="text-[12px] text-[var(--text-3)]">🔒 Secure RazorPay · India-compatible</p>
         </div>
       </footer>
     </div>

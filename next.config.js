@@ -6,7 +6,8 @@ const nextConfig = {
       { protocol: 'https', hostname: 'lh3.googleusercontent.com' },
     ],
   },
-  // Allow Fraunces from Google Fonts
+  // Next.js 16: scroll-behavior override removed — add this to keep smooth nav
+  // Add data-scroll-behavior="smooth" to <html> in layout.tsx if you want smooth scrolling
   async headers() {
     return [
       {
