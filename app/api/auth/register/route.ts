@@ -10,13 +10,17 @@ const Schema = z.object({
   name: z.string().min(2).max(80),
   email: z.string().email(),
   password: z.string().min(8).regex(/[A-Z]/).regex(/[0-9]/),
-  githubUsername: z.string().regex(/^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/),
+  githubUsername: z.preprocess(val => val ?? '', z.string().regex(/^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/)),
   affiliateCode: z.string().optional(),
 })
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const raw = await req.json()
+    // Coerce null values to empty strings so Zod gives clean validation errors
+    const body = Object.fromEntries(
+      Object.entries(raw).map(([k, v]) => [k, v === null ? '' : v])
+    )
     const { name, email, password, githubUsername, affiliateCode } = Schema.parse(body)
 
     // Check GitHub username exists (real API call)
@@ -53,7 +57,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true })
   } catch (err: any) {
-    if (err.name === 'ZodError') return NextResponse.json({ error: 'Invalid input: ' + err.errors[0]?.message }, { status: 400 })
+    if (err.name === 'ZodError') {
+      const field = err.errors[0]?.path?.[0] || 'input'
+      const msg   = err.errors[0]?.message || 'Invalid value'
+      return NextResponse.json({ error: `${field}: ${msg}` }, { status: 400 })
+    }
     console.error('Register error:', err)
     return NextResponse.json({ error: 'Registration failed. Please try again.' }, { status: 500 })
   }
