@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     if (error) throw error
 
     // Welcome email (non-blocking)
-    sendWelcomeEmail(email, name).catch(console.error)
+    sendWelcomeEmail({ to: email, name }).catch(console.error)
 
     return NextResponse.json({ ok: true })
   } catch (err: any) {
