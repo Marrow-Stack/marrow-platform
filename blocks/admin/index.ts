@@ -1,6 +1,6 @@
 // ============================================================
 // MarrowStack Block: Admin Dashboard
-// Stack: Next.js 14 + Supabase (service role)
+// Stack: Next.js 14+ + Supabase (service role)
 // Covers: stats, revenue, user CRUD, feature flags,
 //         affiliate leaderboard, block analytics, role management
 // ============================================================
@@ -105,7 +105,7 @@ export interface FeatureFlag {
 }
 
 // ── Auth guard ────────────────────────────────────────────────
-export function requireAdmin(session: { user?: { role?: string } } | null): void {
+export function requireAdmin(session: { user?: { id?: string; role?: string } } | null): void {
   if (!session?.user?.id)    throw new Error('Unauthenticated')
   const role = session.user.role as string
   if (role !== 'admin' && role !== 'super_admin') {
@@ -113,7 +113,7 @@ export function requireAdmin(session: { user?: { role?: string } } | null): void
   }
 }
 
-export function requireSuperAdmin(session: { user?: { role?: string } } | null): void {
+export function requireSuperAdmin(session: { user?: { id?: string; role?: string } } | null): void {
   if (session?.user?.role !== 'super_admin') {
     throw new Error('Super admin access required')
   }
