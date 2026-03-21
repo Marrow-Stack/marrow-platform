@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { verifyPaymentSignature } from '@/lib/razorpay'
+import { captureOrder } from '@/lib/paypal'
 import { grantRepoAccess } from '@/lib/github'
 import { sendPurchaseEmail } from '@/lib/email'
 import { getBlock } from '@/lib/blocksData'
@@ -11,39 +11,43 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { orderId, paymentId, signature } = await req.json()
-  if (!orderId || !paymentId || !signature) {
-    return NextResponse.json({ error: 'Missing orderId, paymentId, or signature' }, { status: 400 })
-  }
+  const { orderId } = await req.json()
+  if (!orderId) return NextResponse.json({ error: 'Missing orderId' }, { status: 400 })
 
   const userId = session.user.id
-
-  // Verify Razorpay payment signature — this is the security check
-  // If this passes, the payment is genuine — no need for a second API call
-  const valid = verifyPaymentSignature(orderId, paymentId, signature)
-  if (!valid) {
-    console.error('Razorpay signature verification failed', { orderId, paymentId })
-    return NextResponse.json({ error: 'Payment verification failed' }, { status: 400 })
-  }
 
   // Get pending order
   const { data: pending } = await supabaseAdmin
     .from('pending_orders').select('*')
     .eq('order_id', orderId).eq('user_id', userId).single()
-  if (!pending) return NextResponse.json({ error: 'Order not found or already processed' }, { status: 404 })
+  if (!pending) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
 
-  // Idempotency — already fulfilled
-  const { data: existingPurchase } = await supabaseAdmin
-    .from('purchases').select('id').eq('paypal_order_id', orderId).single()
-  if (existingPurchase) {
+  // Idempotency
+  const { data: existing } = await supabaseAdmin
+    .from('purchases').select('id, block_id').eq('paypal_order_id', orderId).single()
+  if (existing) {
     await supabaseAdmin.from('pending_orders').delete().eq('order_id', orderId)
-    return NextResponse.json({ success: true, blockId: pending.block_id })
+    return NextResponse.json({ success: true, blockId: existing.block_id })
   }
 
+  // Capture payment
+  let capture: any
+  try {
+    capture = await captureOrder(orderId)
+  } catch (err: any) {
+    console.error('PayPal capture error:', err.message)
+    return NextResponse.json({ error: 'Payment capture failed. Contact support.' }, { status: 502 })
+  }
+
+  if (capture.status !== 'COMPLETED') {
+    return NextResponse.json({ error: `Payment status: ${capture.status}` }, { status: 400 })
+  }
+
+  const captureId = capture.purchase_units?.[0]?.payments?.captures?.[0]?.id
   const block = getBlock(pending.block_id)!
   const githubUsername = session.user.githubUsername
 
-  // Grant GitHub repo access
+  // Grant GitHub access
   const reposToGrant = [block.repoName]
   if (block.bundleIds) {
     for (const id of block.bundleIds) { const b = getBlock(id); if (b) reposToGrant.push(b.repoName) }
@@ -57,13 +61,13 @@ export async function POST(req: NextRequest) {
     user_id:           userId,
     block_id:          pending.block_id,
     paypal_order_id:   orderId,
-    paypal_capture_id: paymentId,
+    paypal_capture_id: captureId,
     amount:            pending.amount,
     github_username:   githubUsername,
     status:            'completed',
   })
 
-  // Affiliate commission (25%)
+  // Affiliate commission 25%
   if (pending.affiliate_user_id) {
     const commission = Math.round(pending.amount * 25) / 100
     await supabaseAdmin.from('affiliate_earnings').insert({

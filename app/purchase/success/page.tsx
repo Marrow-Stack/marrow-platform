@@ -1,15 +1,49 @@
 'use client'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
-import { Suspense } from 'react'
 import Link from 'next/link'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
-  const status  = searchParams.get('status')
-  const blockId = searchParams.get('blockId')
+  const router = useRouter()
+  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
+  const [blockId, setBlockId] = useState<string | null>(null)
 
-  // Razorpay: status=ok means capture already completed in the handler
-  if (status === 'ok') {
+  useEffect(() => {
+    const orderId = searchParams.get('token')
+    const bid = searchParams.get('blockId')
+    if (bid) setBlockId(bid)
+
+    if (!orderId) { setStatus('error'); return }
+
+    fetch('/api/purchase/capture', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ orderId }),
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success) {
+          setBlockId(data.blockId)
+          setStatus('success')
+        } else {
+          setStatus('error')
+        }
+      })
+      .catch(() => setStatus('error'))
+  }, [])
+
+  if (status === 'loading') {
+    return (
+      <div className="card max-w-md w-full p-10 text-center">
+        <div className="w-8 h-8 border-2 border-[var(--border)] border-t-[var(--accent)] rounded-full animate-spin mx-auto mb-4" />
+        <p className="text-[var(--text-2)]">Confirming your payment…</p>
+      </div>
+    )
+  }
+
+  if (status === 'success') {
     return (
       <div className="card max-w-md w-full p-10 text-center">
         <div className="w-16 h-16 rounded-full flex items-center justify-center text-3xl mx-auto mb-6"
@@ -29,7 +63,9 @@ function SuccessContent() {
     <div className="card max-w-md w-full p-8 text-center">
       <p className="text-4xl mb-4">⚠️</p>
       <h1 className="font-display font-bold text-[22px] text-[var(--text)] mb-2">Something went wrong</h1>
-      <p className="text-[var(--text-2)] text-sm mb-6">If payment was deducted, email <a href="mailto:support@marrowstack.dev" className="text-[var(--accent)]">support@marrowstack.dev</a></p>
+      <p className="text-[var(--text-2)] text-sm mb-6">
+        If payment was deducted, email <a href="mailto:support@marrowstack.dev" className="text-[var(--accent)]">support@marrowstack.dev</a>
+      </p>
       <Link href="/dashboard" className="btn-accent inline-flex px-6 py-2.5 text-sm font-semibold text-white">Go to Dashboard</Link>
     </div>
   )

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { createRazorpayOrder, getLiveUsdToInr, usdToInrPaise } from '@/lib/razorpay'
+import { createOrder } from '@/lib/paypal'
 import { getBlock } from '@/lib/blocksData'
 import { supabaseAdmin } from '@/lib/supabase'
 
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   const { data: already } = await supabaseAdmin
     .from('purchases').select('id')
     .eq('user_id', userId).eq('block_id', blockId).eq('status', 'completed').single()
-  if (already) return NextResponse.json({ error: 'You already own this block. Check your dashboard.' }, { status: 400 })
+  if (already) return NextResponse.json({ error: 'You already own this block.' }, { status: 400 })
 
   // Resolve affiliate
   let affiliateUserId: string | null = null
@@ -30,33 +30,25 @@ export async function POST(req: NextRequest) {
     if (aff && aff.id !== userId) affiliateUserId = aff.id
   }
 
-  // Create Razorpay order
-  const receiptId = `ms_${userId.slice(0, 8)}_${Date.now()}`
-  const liveRate  = await getLiveUsdToInr()
-  let rzOrder: any
+  let order: any
   try {
-    rzOrder = await createRazorpayOrder(block.price, blockId, receiptId, liveRate)
+    const desc = block.name.replace(/[^a-zA-Z0-9 _-]/g, '').trim().slice(0, 127)
+    order = await createOrder(block.price.toString(), `MarrowStack: ${desc}`)
   } catch (err: any) {
-    console.error('Razorpay createOrder failed:', err.message)
+    console.error('PayPal createOrder failed:', err.message)
     return NextResponse.json({ error: 'Payment error. Please try again.' }, { status: 502 })
   }
 
-  // Store pending order
   await supabaseAdmin.from('pending_orders').insert({
-    order_id:          rzOrder.id,
+    order_id:          order.id,
     user_id:           userId,
     block_id:          blockId,
     amount:            block.price,
     affiliate_user_id: affiliateUserId,
   })
 
-  return NextResponse.json({
-    orderId:   rzOrder.id,
-    amount:    rzOrder.amount,      // paise
-    currency:  rzOrder.currency,    // INR
-    keyId:     process.env.RAZORPAY_KEY_ID,
-    blockName: block.name,
-    userName:  session.user.name || '',
-    userEmail: session.user.email || '',
-  })
+  const approvalUrl = order.links?.find((l: any) => l.rel === 'approve')?.href
+  if (!approvalUrl) return NextResponse.json({ error: 'No PayPal approval URL' }, { status: 502 })
+
+  return NextResponse.json({ orderId: order.id, approvalUrl })
 }
