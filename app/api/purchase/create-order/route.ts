@@ -47,8 +47,9 @@ export async function POST(req: NextRequest) {
     affiliate_user_id: affiliateUserId,
   })
 
+  console.log('PayPal order response:', JSON.stringify(order, null, 2))
   const approvalUrl = order.links?.find((l: any) => l.rel === 'approve')?.href
-  if (!approvalUrl) return NextResponse.json({ error: 'No PayPal approval URL' }, { status: 502 })
+  if (!approvalUrl) return NextResponse.json({ error: 'No PayPal approval URL', order }, { status: 502 })
 
   return NextResponse.json({ orderId: order.id, approvalUrl })
 }
