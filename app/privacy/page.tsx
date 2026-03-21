@@ -2,16 +2,49 @@ import { Navbar } from '@/components/Navbar'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 
-export const metadata: Metadata = { title: 'Privacy Policy' }
+export const metadata: Metadata = { title: 'Privacy Policy — MarrowStack' }
 
 const SECTIONS = [
-  { h: 'What we collect', body: 'We collect your name, email address, GitHub username, and purchase history when you create an account and make purchases. Passwords are hashed with bcrypt and never stored in plain text. All payment processing is handled by PayPal — we never see or store card details.' },
-  { h: 'How we use it', body: 'Your data is used to process purchases, grant GitHub repository access, send transactional emails (receipts, access confirmations), and track affiliate referrals. We do not sell your data to third parties, ever.' },
-  { h: 'GitHub access', body: 'After purchase we use our GitHub Personal Access Token to invite you as a collaborator (read-only) on the relevant private repository. We only grant pull access — you cannot push to our repos.' },
-  { h: 'Cookies', body: 'We use one session cookie for authentication (NextAuth.js) and a 30-day affiliate tracking cookie if you arrive via a referral link. No advertising or third-party tracking cookies.' },
-  { h: 'Data retention', body: 'We retain account data while your account is active. You can request deletion at any time by emailing support@marrowstack.dev. Purchase records may be retained for up to 7 years for legal and tax compliance.' },
-  { h: 'Your rights', body: 'You can request access to, correction of, or deletion of your personal data at any time. Email support@marrowstack.dev and we will respond within 48 hours.' },
-  { h: 'Contact', body: 'Questions about this policy? Email support@marrowstack.dev.' },
+  {
+    h: 'Who We Are',
+    body: 'MarrowStack is operated by Samarth Shukla, an individual developer based in India. We sell digital code products for web developers. Contact: support@marrowstack.dev.',
+  },
+  {
+    h: 'What We Collect',
+    body: 'We collect your name, email address, GitHub username, and purchase history when you create an account and make purchases. Passwords are hashed with bcrypt and never stored in plain text. All payment processing is handled by our payment provider — we never see or store card or bank details.',
+  },
+  {
+    h: 'How We Use It',
+    body: 'Your data is used to process purchases, grant GitHub repository access, send transactional emails (receipts, access confirmations), and track affiliate referrals. We do not sell your data to third parties, ever.',
+  },
+  {
+    h: 'GitHub Access',
+    body: 'After purchase we use our GitHub Personal Access Token to invite you as a read-only collaborator on the relevant private repository. We only grant pull access — you cannot push to our repos.',
+  },
+  {
+    h: 'Cookies',
+    body: 'We use one session cookie for authentication (NextAuth.js) and a 30-day affiliate tracking cookie if you arrive via a referral link. No advertising or third-party tracking cookies.',
+  },
+  {
+    h: 'Data Storage',
+    body: 'Your data is stored in Supabase (PostgreSQL), hosted on AWS infrastructure. We do not transfer your personal data outside of necessary service providers (Supabase, GitHub, Resend for email).',
+  },
+  {
+    h: 'Data Retention',
+    body: 'We retain account data while your account is active. You can request deletion at any time by emailing support@marrowstack.dev. Purchase records may be retained for up to 7 years for legal and tax compliance.',
+  },
+  {
+    h: 'Your Rights',
+    body: 'You can request access to, correction of, or deletion of your personal data at any time. Email support@marrowstack.dev and we will respond within 48 hours on business days.',
+  },
+  {
+    h: 'Grievance Officer',
+    body: 'In accordance with the Information Technology Act, 2000, the grievance officer is: Samarth Shukla, support@marrowstack.dev. Complaints will be acknowledged within 48 hours and resolved within 30 days.',
+  },
+  {
+    h: 'Contact',
+    body: 'Questions about this policy? Email support@marrowstack.dev.',
+  },
 ]
 
 export default function PrivacyPage() {

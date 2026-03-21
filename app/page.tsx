@@ -209,7 +209,7 @@ export default function HomePage() {
             <span className="font-display font-bold text-[var(--text)] text-[15px]">MarrowStack</span>
           </div>
           <div className="flex flex-wrap gap-5 text-[13px] text-[var(--text-3)] justify-center">
-            {[['Blocks', '/blocks'], ['Affiliate', '/affiliate'], ['Privacy', '/privacy'], ['Terms', '/terms']].map(([l, h]) => (
+            {[['Blocks', '/blocks'], ['Affiliate', '/affiliate'], ['About', '/about'], ['Privacy', '/privacy'], ['Terms', '/terms']].map(([l, h]) => (
               <Link key={l} href={h} className="hover:text-[var(--text)] transition-colors">{l}</Link>
             ))}
           </div>
