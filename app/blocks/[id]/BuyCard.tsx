@@ -32,12 +32,18 @@ export function BuyCard({ block, affiliateCode }: { block: Block; affiliateCode?
         </div>
       )}
 
-      <PaymentButton
-        blockId={block.id}
-        blockName={block.name}
-        price={block.price}
-        affiliateCode={affiliateCode}
-      />
+      {/* Payments coming soon */}
+      <div className="rounded-xl p-4 text-center space-y-2"
+        style={{ background: 'var(--bg-3)', border: '1px solid var(--border)' }}>
+        <p className="font-semibold text-[var(--text)] text-[14px]">🔜 Payments launching soon</p>
+        <p className="text-[var(--text-3)] text-[12px]">
+          We are setting up secure checkout. Email{' '}
+          <a href="mailto:support@marrowstack.dev" style={{ color: 'var(--accent)' }}>
+            support@marrowstack.dev
+          </a>{' '}
+          to get early access.
+        </p>
+      </div>
     </div>
   )
 }
