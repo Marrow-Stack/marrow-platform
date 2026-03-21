@@ -7,20 +7,15 @@ import { useCurrency } from '@/hooks/useCurrency'
 
 export function BuyCard({ block, affiliateCode }: { block: Block; affiliateCode?: string | null }) {
   const { data: session } = useSession()
-  const { formatPrice, isIndia } = useCurrency()
+  const { formatPrice } = useCurrency()
   const noGitHub = session?.user && !session.user.githubUsername
 
   return (
     <div className="card p-6">
-      <div className="mb-1 flex items-baseline gap-2">
+      <div className="mb-1">
         <span className="font-display font-black text-[38px] text-[var(--text)]">
           {formatPrice(block.price)}
         </span>
-        {/* Show secondary currency */}
-        {isIndia
-          ? <span className="text-[var(--text-3)] text-sm">(${block.price})</span>
-          : <span className="text-[var(--text-3)] text-sm">(₹{Math.round(block.price * 84).toLocaleString('en-IN')})</span>
-        }
       </div>
       <p className="text-[12px] text-[var(--text-3)] mb-4">One-time · Instant GitHub access</p>
 
