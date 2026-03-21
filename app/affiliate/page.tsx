@@ -11,11 +11,11 @@ const STEPS = [
   { n: '01', title: 'Sign up free', body: 'Create your account and your unique affiliate link appears instantly in your dashboard.' },
   { n: '02', title: 'Share anywhere', body: 'Post on Twitter, YouTube, your blog, Discord — anywhere developers hang out.' },
   { n: '03', title: 'Earn 25%', body: 'Every purchase you refer pays 25%. A single MVP bundle referral earns you $17.25.' },
-  { n: '04', title: 'Get paid via RazorPay', body: 'Request a payout when your balance hits $50. Arrives in 1–3 business days.' },
+  { n: '04', title: 'Get paid automatically', body: 'Lemon Squeezy pays out automatically when your balance hits $50. Arrives in 3–5 business days.' },
 ]
 
 const FAQS = [
-  { q: 'When do I get paid?', a: 'Request a payout any time your balance hits $50. RazorPay transfers land in 1–3 business days.' },
+  { q: 'When do I get paid?', a: 'Lemon Squeezy pays out automatically when your balance hits $50. Transfers land in 3–5 business days.' },
   { q: 'Is there an earnings cap?', a: 'No cap. Refer 1 sale or 1,000 — you earn 25% on all of them, forever.' },
   { q: 'How long does the cookie last?', a: '30 days. If someone clicks your link and buys within 30 days, you earn the commission.' },
   { q: 'Do I need to buy before I can be an affiliate?', a: 'No. You get your link the moment you create a free account.' },
@@ -49,7 +49,7 @@ export default function AffiliatePage() {
           <p className="text-[18px] text-[var(--text-2)] max-w-xl mx-auto mb-10 leading-relaxed">
             Share MarrowStack with your audience. Earn 25% on every sale — not just the first one.
           </p>
-          <Link href="/auth/signup" className="btn-accent inline-flex px-9 py-4 text-[15px] font-semibold text-white">
+          <Link href="https://marrow-stack.lemonsqueezy.com/affiliates" target="_blank" rel="noopener noreferrer" className="btn-accent inline-flex px-9 py-4 text-[15px] font-semibold text-white">
             Get your affiliate link →
           </Link>
         </div>
@@ -121,7 +121,7 @@ export default function AffiliatePage() {
         <div className="max-w-md mx-auto text-center">
           <h2 className="font-display font-bold text-[28px] text-[var(--text)] mb-4">Ready to start earning?</h2>
           <p className="text-[var(--text-2)] text-sm mb-8">Free to join. No approval needed. Your link is ready in seconds.</p>
-          <Link href="/auth/signup" className="btn-accent inline-flex px-9 py-3.5 text-[15px] font-semibold text-white">
+          <Link href="https://marrow-stack.lemonsqueezy.com/affiliates" target="_blank" rel="noopener noreferrer" className="btn-accent inline-flex px-9 py-3.5 text-[15px] font-semibold text-white">
             Join the program →
           </Link>
         </div>

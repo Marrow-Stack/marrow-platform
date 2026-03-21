@@ -100,11 +100,11 @@ export function PaymentButton({ blockId, blockName, price, affiliateCode }: Prop
           <><span>Pay {formatPrice(price)}</span></>
         )}
       </button>
-      <div className="flex justify-center">
+      {/* <div className="flex justify-center">
         <div className="inline-flex items-center gap-2 text-[12px]" style={{ color: '#16A34A' }}>
           🛡️ <span>30-day money-back guarantee</span>
         </div>
-      </div>
+      </div> */}
       <div className="space-y-1.5 pt-1">
         {['Instant GitHub repo access', 'Own the code forever', 'Free updates', '30-day refund if it breaks'].map(item => (
           <p key={item} className="flex items-center gap-2 text-[12px] text-[var(--text-3)]">

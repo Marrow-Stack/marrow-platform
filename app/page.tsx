@@ -171,7 +171,7 @@ export default function HomePage() {
       </section>
 
       {/* ── Guarantee ─────────────────────────────────────────── */}
-      <section className="py-16 px-5 sm:px-8 border-y border-[var(--border)]" style={{ background: 'var(--bg-2)' }}>
+      {/* <section className="py-16 px-5 sm:px-8 border-y border-[var(--border)]" style={{ background: 'var(--bg-2)' }}>
         <div className="max-w-2xl mx-auto text-center">
           <GuaranteeBadge large />
           <h3 className="font-display font-bold text-[26px] text-[var(--text)] mt-6 mb-3">30-Day Money-Back Guarantee</h3>
@@ -179,7 +179,7 @@ export default function HomePage() {
             If the code doesn't work as described, email within 30 days for a full refund — no questions asked. You own the code forever. No subscriptions, no lock-in.
           </p>
         </div>
-      </section>
+      </section> */}
 
       {/* ── Affiliate CTA ──────────────────────────────────────── */}
       <section className="py-24 px-5 sm:px-8">

@@ -162,7 +162,7 @@ export default function DashboardPage() {
                     <button onClick={() => { navigator.clipboard.writeText(affiliate.affiliateLink); toast.success('Copied!') }}
                       className="btn-accent px-5 py-2.5 text-[13px] font-semibold text-white shrink-0">Copy</button>
                   </div>
-                  <p className="text-[11px] text-[var(--text-3)] mt-2">Earn 25% on every sale. PayPal payout when balance hits $50.</p>
+                  <p className="text-[11px] text-[var(--text-3)] mt-2">Earn 25% on every sale. Auto payout when balance hits $50.</p>
                 </div>
 
                 {affiliate.balance >= 50 && (
