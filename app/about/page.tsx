@@ -34,7 +34,7 @@ export default function AboutPage() {
             <p className="text-[13px] text-[var(--text-3)]">Based in India</p>
             <p className="text-[13px]">
               <span className="text-[var(--text-3)]">Email: </span>
-              <a href="mailto:support@marrowstack.dev" className="text-[var(--accent)]">support@marrowstack.dev</a>
+              <a href="mailto:support@marrowstack.dev" className="text-[var(--accent)]">samarthofficial52@gmail.com</a>
             </p>
             <p className="text-[13px]">
               <span className="text-[var(--text-3)]">Website: </span>
