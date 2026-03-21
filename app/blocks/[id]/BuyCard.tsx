@@ -38,8 +38,8 @@ export function BuyCard({ block, affiliateCode }: { block: Block; affiliateCode?
         <p className="font-semibold text-[var(--text)] text-[14px]">🔜 Payments launching soon</p>
         <p className="text-[var(--text-3)] text-[12px]">
           We are setting up secure checkout. Email{' '}
-          <a href="mailto:support@marrowstack.dev" style={{ color: 'var(--accent)' }}>
-            support@marrowstack.dev
+          <a href="mailto:samarthofficial52@gmail.com" style={{ color: 'var(--accent)' }}>
+            samarthofficial52@gmail.com
           </a>{' '}
           to get early access.
         </p>
