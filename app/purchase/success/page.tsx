@@ -1,37 +1,37 @@
 'use client'
 import { useEffect, useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 function SuccessContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [blockId, setBlockId] = useState<string | null>(null)
 
   useEffect(() => {
-    const orderId = searchParams.get('token')
-    const bid = searchParams.get('blockId')
-    if (bid) setBlockId(bid)
+    // Dodo returns ?payment_id=xxx&status=succeeded in the return URL
+    const paymentId  = searchParams.get('payment_id')
+    const payStatus  = searchParams.get('status')
 
-    if (!orderId) { setStatus('error'); return }
-
-    fetch('/api/purchase/capture', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ orderId }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        if (data.success) {
-          setBlockId(data.blockId)
-          setStatus('success')
-        } else {
-          setStatus('error')
-        }
+    if (payStatus === 'succeeded' && paymentId) {
+      fetch('/api/purchase/capture', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
       })
-      .catch(() => setStatus('error'))
+        .then(r => r.json())
+        .then(data => {
+          if (data.success) { setBlockId(data.blockId); setStatus('success') }
+          else setStatus('error')
+        })
+        .catch(() => setStatus('error'))
+    } else if (payStatus === 'failed' || payStatus === 'cancelled') {
+      setStatus('error')
+    } else {
+      // Fallback — webhook will have handled it
+      setStatus('success')
+    }
   }, [])
 
   if (status === 'loading') {

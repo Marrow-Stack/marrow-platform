@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { refundCapture } from '@/lib/paypal'
+import { refundPayment } from '@/lib/dodopayments'
 import { sendRefundEmail } from '@/lib/email'
 import { getBlock } from '@/lib/blocksData'
 import { supabaseAdmin } from '@/lib/supabase'
@@ -17,11 +17,11 @@ export async function POST(req: NextRequest) {
     .select('*').eq('id', purchaseId).eq('user_id', userId).eq('status', 'completed').single()
   if (!purchase) return NextResponse.json({ error: 'Purchase not found' }, { status: 404 })
 
-  const captureId = purchase.paypal_capture_id
-  if (!captureId) return NextResponse.json({ error: 'No capture ID. Contact support.' }, { status: 400 })
+  const paymentId = purchase.paypal_capture_id
+  if (!paymentId) return NextResponse.json({ error: 'No payment ID. Contact support.' }, { status: 400 })
 
   try {
-    await refundCapture(captureId)
+    await refundPayment(paymentId)
   } catch (e: any) {
     return NextResponse.json({ error: 'Refund failed: ' + e.message }, { status: 502 })
   }

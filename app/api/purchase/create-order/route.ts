@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { createOrder } from '@/lib/paypal'
+import { createCheckoutSession } from '@/lib/dodopayments'
 import { getBlock } from '@/lib/blocksData'
 import { supabaseAdmin } from '@/lib/supabase'
 
@@ -26,30 +26,34 @@ export async function POST(req: NextRequest) {
   // Resolve affiliate
   let affiliateUserId: string | null = null
   if (affiliateCode) {
-    const { data: aff } = await supabaseAdmin.from('profiles').select('id').eq('affiliate_code', affiliateCode).single()
+    const { data: aff } = await supabaseAdmin
+      .from('profiles').select('id').eq('affiliate_code', affiliateCode).single()
     if (aff && aff.id !== userId) affiliateUserId = aff.id
   }
 
-  let order: any
+  // Create Dodo Payments checkout session
+  let checkout: any
   try {
-    const desc = block.name.replace(/[^a-zA-Z0-9 _-]/g, '').trim().slice(0, 127)
-    order = await createOrder(block.price.toString(), `MarrowStack: ${desc}`)
+    checkout = await createCheckoutSession({
+      productId:     block.doduProductId!, // set per block in blocksData.ts
+      customerEmail: session.user.email!,
+      customerName:  session.user.name || 'Developer',
+      returnUrl:     `${process.env.NEXT_PUBLIC_APP_URL}/purchase/success`,
+      metadata:      { blockId, userId, affiliateUserId: affiliateUserId || '' },
+    })
   } catch (err: any) {
-    console.error('PayPal createOrder failed:', err.message)
+    console.error('Dodo createCheckout failed:', err.message)
     return NextResponse.json({ error: 'Payment error. Please try again.' }, { status: 502 })
   }
 
+  // Store pending order
   await supabaseAdmin.from('pending_orders').insert({
-    order_id:          order.id,
+    order_id:          checkout.payment_id || checkout.id,
     user_id:           userId,
     block_id:          blockId,
     amount:            block.price,
     affiliate_user_id: affiliateUserId,
   })
 
-  console.log('PayPal order response:', JSON.stringify(order, null, 2))
-  const approvalUrl = order.links?.find((l: any) => l.rel === 'approve')?.href
-  if (!approvalUrl) return NextResponse.json({ error: 'No PayPal approval URL', order }, { status: 502 })
-
-  return NextResponse.json({ orderId: order.id, approvalUrl })
+  return NextResponse.json({ checkoutUrl: checkout.checkout_url })
 }

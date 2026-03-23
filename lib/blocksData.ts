@@ -16,6 +16,7 @@ export interface Block {
   isBundle?:     boolean
   bundleIds?:    string[]
   bundleDiscount?: number
+  doduProductId?:  string   // Dodo Payments product ID from dashboard
 }
 
 export const BLOCKS: Block[] = [
