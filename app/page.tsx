@@ -45,7 +45,7 @@ export default function HomePage() {
           <div className="inline-flex items-center gap-2 badge mb-8 text-[var(--accent)]"
             style={{ background: 'var(--accent-bg)', border: '1px solid rgba(239,160,32,0.25)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent)] animate-pulse" />
-            {BLOCKS.length} blocks · instant GitHub access · PayPal checkout
+            {BLOCKS.length} blocks · instant GitHub access · Instant checkout
           </div>
 
           {/* Headline */}
